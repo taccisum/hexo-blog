@@ -3,6 +3,8 @@ title: 声明式http客户端openfeign的研究与应用
 urlname: openfeign_research_and_application
 date: 2018-06-21 05:54:42
 categories:
+  - java
+  - spring cloud
 tags:
 ---
 
