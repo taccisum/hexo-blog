@@ -1,5 +1,6 @@
 ---
 title: 同时配置UrlRewriteFilter与ShiroFilter导致outbound rule失效的问题
+urlname: outbound_rule_invalid_cause_by_urlrewritefilter_and_shirofilter
 date: 2017-12-21 16:10:51
 categories:
     - java

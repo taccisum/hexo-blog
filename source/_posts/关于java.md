@@ -1,5 +1,6 @@
 ---
 title: 关于java
+urlname: about_java
 date: 2017-09-25 16:25:28
 categories: 
  - java

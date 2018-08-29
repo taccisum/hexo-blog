@@ -1,5 +1,6 @@
 ---
 title: Gradle学习（二） - 常用插件
+urlname: learn_gradle_2
 date: 2017-09-26 17:56:40
 categories:
     - java
