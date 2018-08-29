@@ -17,7 +17,7 @@ tags:
 大概的意思是build scan能为你提供构建过程中发生的what and why信息，在你构建的时候，插件会抓取数据提交到`Gradle Cloud`，同时返回一个包含构建信息的链接。
 
 **工作流程**
-![图片](https://docs.gradle.com/build-scan-plugin/images/build-scan-service-overview.svg)
+![overview](https://docs.gradle.com/build-scan-plugin/images/build-scan-service-overview.svg)
 
 ### 配置
 配置方式很简单，只需要在build.gradle中加入
@@ -75,5 +75,100 @@ Total time: 1.283 secs
 相比之下，这里不得不提到一直被人吐槽的Maven的构建信息，真心是非常不友好😒
 
 **tip**
-- 如果构建时出现"There is no previous build data available to publish."，可能是没有先执行build -> build。
+- 如果构建时出现"There is no previous build data available to publish."，可能是没有先执行任一task。
+
+## Application插件
+
+### 介绍
+Application插件可以让你轻松地在本地开发环境下`执行JVM应用`，同时还可以帮助你将应用打包成一个包含了各类操作系统对应`启动脚本`的tar and/or zip文件。
+
+[The Application Plugin](https://docs.gradle.org/3.5/userguide/application_plugin.html)
+
+### 配置
+**build.gradle**
+```groovy
+apply plugin: 'application'
+mainClassName = "cn.tac.test.gradle.Application"    //指定程序入口类
+//applicationDefaultJvmArgs = ["-Dgreeting.language=en"]      //应用程序启动时的jvm参数
+```
+
+添加了Application插件后，项目会多出以下几个task
+- run
+- startScripts
+- installDist
+- distZip
+- distTar
+
+具体可以通过tasks任务查看
+
+**tips**
+- 按照官方的说法，Application插件已经隐式地包括了`Java`插件和`Distribution`插件，因此如果你原来引入了这两个插件，现在可以去掉了
+
+### 使用
+以我的main函数为例（注意要跟`mainClassName`属性指定的类一致）
+```java
+package cn.tac.test.gradle;
+
+import java.util.Arrays;
+
+public class Application {
+    public static void main(String[] args) {
+        if (args.length > 0) {
+             System.out.println("hello, it's you args: " + Arrays.toString(args));
+        } else {
+             System.out.println("hello, you do not input any args");
+        }
+    }
+}
+```
+
+#### 执行应用
+```shell
+$ sh gradlew run
+
+> Task :run
+hello, you do not input any args
+```
+
+如果要`传入参数`，可以配置一下run任务
+**build.gradle**
+```groovy
+run {
+    if(project.hasProperty("myArgs")){
+      args myArgs
+    }
+}
+```
+
+上面配置的意思是，如果当前项目的project对象包含有myArgs属性，那么在执行main函数时就将这个属性作为参数传递，之后我们可以这样执行
+```shell
+$ sh gradlew run -PmyArgs="123","abc","qaz"
+
+> Task :run
+hello, it s you args: [123,abc,qaz]
+```
+
+其中-PmyArgs分为两部分
+- -P，命令行option。作用是指定一个属性的值run，不能省去
+- myArgs，我们刚刚在run任务中自定义的属性，通过-P指定
+
+#### 打包
+执行以下脚本可以进行打包
+```shell
+$ sh gradlew distTar distZip
+```
+
+打包好的内容在`/build/distributions`中，分别多了一个tar文件和一个zip文件，解压后查看目录结构如下
+```shell
+$ tree .
+.
+├── bin
+│   ├── gradle_cli
+│   └── gradle_cli.bat
+└── lib
+    └── gradle_cli-1.0.jar
+```
+
+**tips**
+- 当然你也可以通过build任务来打包，build任务会自动将`distTar`和`distZip`任务包括进去
 

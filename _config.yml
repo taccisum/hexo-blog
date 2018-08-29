@@ -7,7 +7,7 @@ title: taccisum 😉
 subtitle:
 description: el psy congroo.
 author: 廖锦锋
-language: zh-Hans
+language: en
 timezone:
 avatar: /images/Avatar.jpg
 
@@ -83,3 +83,4 @@ deploy:
   branch: master
 social:
   GitHub: https://github.com/taccisum
+  Gitee: https://gitee.com/taccisum/projects
