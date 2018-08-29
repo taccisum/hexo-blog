@@ -20,3 +20,8 @@
   </a>
 </div>
 {% endif %}
+
+<div class="theme-info">
+  <div class="powered-by"></div>
+  <span class="post-count">Total word count: {{ totalcount(site) }}</span>
+</div>
