@@ -3,8 +3,8 @@ title: 在@MybatisTest中使用通用Mapper出现InstantiationException的问题
 urlname: instantiationexception_on_mybatistest
 date: 2017-11-15 11:42:36
 categories: 
-	- java
-	- mybatis
+  - java
+  - 踩坑日记
 
 tags:
 ---

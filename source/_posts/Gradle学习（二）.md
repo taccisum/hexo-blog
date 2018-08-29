@@ -4,7 +4,6 @@ urlname: learn_gradle_2
 date: 2017-09-26 17:56:40
 categories:
     - java
-    - 构建工具
     - gradle
 tags:
 ---
