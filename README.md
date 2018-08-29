@@ -7,11 +7,12 @@ this is my personal blog built via hexo.
 $ npm install
 $ npm install -g hexo-cli
 $ hexo s \
+-g \ # re-generate
 --draft # show draft
 ```
 
 # how to deploy
 
 ```shell
-$ hexo d
+$ hexo d -g
 ```
