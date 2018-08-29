@@ -155,6 +155,40 @@ public class AppConfiguration implements EnvironmentAware {
 }
 ```
 
+## 指定了get方法，但feign仍然使用了post方法进行请求
+如下代码所示
+```java
+@FeignClient("microservice-provider-user")
+public interface UserFeignClient {
+  @RequestMapping(value = "/get", method = RequestMethod.GET)
+  public User get0(User user);
+}
+```
+通过`@RequestMapping`的method属性指定了请求方法为GET，但实际运行会发现feign仍然使用了POST方法进行了调用。
+
+### 解决方案
+
+这种写法并不正确，正确写法有二：
+
+#### 1. 通过@RequestParam指定url参数名
+
+```java
+@FeignClient(name = "microservice-provider-user")
+public interface UserFeignClient {
+  @RequestMapping(value = "/get", method = RequestMethod.GET)
+  public User get1(@RequestParam("id") Long id, @RequestParam("username") String username);
+}
+```
+
+#### 2. 当目标url参数较多时，可使用map来构建
+```java
+@FeignClient(name = "microservice-provider-user")
+public interface UserFeignClient {
+  @RequestMapping(value = "/get", method = RequestMethod.GET)
+  public User get2(@RequestParam Map<String, Object> map);
+}
+```
+
 ## 使用MultipartFile类型作为请求参数
 
 有时对外提供的接口调用可能需要传送文件，此时需要对`MultipartFile`类型的参数进行处理
