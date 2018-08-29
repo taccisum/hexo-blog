@@ -9,5 +9,5 @@
 </div>
 
 <div>
-  <span class="post-count">{{ totalcount(site) }} works</span>
+  <span class="post-count">{{ totalcount(site) }} words</span>
 </div>
