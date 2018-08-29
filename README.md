@@ -11,3 +11,7 @@ $ hexo s \
 ```
 
 # how to deploy
+
+```shell
+$ hexo d
+```
