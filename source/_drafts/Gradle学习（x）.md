@@ -1,5 +1,6 @@
 ---
 title: Gradle学习（x） - 常用技巧
+urlname: learn_gradle_x
 date: 2017-09-27 16:49:10
 categories:
     - java
