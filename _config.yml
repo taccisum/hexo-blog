@@ -81,6 +81,12 @@ deploy:
   type: git
   repo: https://github.com/taccisum/taccisum.github.io.git
   branch: master
+
+# Social
 social:
   GitHub: https://github.com/taccisum
   Gitee: https://gitee.com/taccisum/projects
+
+# Sitemap
+sitemap:
+  path: sitemap.xml
