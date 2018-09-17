@@ -74,6 +74,9 @@ final HystrixCommandProperties.Setter setter = HystrixCommandProperties.Setter()
 1. 改写HttpClientRibbonCommand的实现
 //todo:: 待补充
 
+2. 升级spring cloud版本到Edgware.SR1以上
+Spring cloud在`Edgware.SR1`版本中已经解决了此问题([issue2633](https://github.com/spring-cloud/spring-cloud-netflix/pull/2633))，如果有条件可以直接通过升级版本来解决此问题。
+
 # 参考链接
 
 - [Hystrix Configurations](https://github.com/Netflix/Hystrix/wiki/Configuration)
