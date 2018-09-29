@@ -87,16 +87,20 @@ redissonClient.getScript().eval(
 
 ## 踩过的一些坑
 
-### 传入的boolean值参数会变成字符串
+### 传入的Boolean值参数会变成字符串
 假设通过redisson的eval()传入的`ARGV = false`，那么在lua脚本中
 ```lua
 print(type(ARGV[1]))    --输出'string'
 ```
 
-### 传入数值也会变成字符串
+### 传入数值也会变成字符串，非int型则会被序列化存储
 假设通过redisson的eval()传入的`ARGV = 1L`，那么在lua脚本中获取会变成
 ```lua
-print(ARGV[3])   --输出'["java.lang.Long",1]'
+print(ARGV[1])   --输出'["java.lang.Long",1]'
+```
+若传入的是`ARGV = 1`，则
+```lua
+print(ARGV[1])   --输出'1'
 ```
 
 ### 直接从redis.call()获取得值是int型，而在lua中进行了数值操作后得到的值却是long型
