@@ -1,5 +1,5 @@
 ---
-title: redisson研究笔记
+title: redisson学习笔记
 urlname: redisson学习笔记
 date: 2018-09-21 13:57:48
 categories:
@@ -63,6 +63,52 @@ public class Application {
 ```
 
 虽然不知道redisson官方出于什么原因没有提供`spring.factories`文件，总之再次启动，正常。
+
+# redisson锁
+
+## 实践
+
+### 接口调用限制
+
+# redisson执行lua脚本
+
+redisson提供了很方便地执行lua脚本的方式
+```java
+redissonClient.getScript().eval(
+    RScript.Mode.READ_ONLY, //执行模式
+    "return redis.call('get', KEYS[1])",    // 要执行的lua脚本
+    RScript.ReturnType.INTEGER, // 返回值类型
+    Lists.newArrayList("tac"),  // 传入KEYS
+    true, 1L, "hello"   //传入ARGV
+)
+```
+
+> 更具体可以参考官方文档[脚本执行](https://github.com/redisson/redisson/wiki/10.-%E9%A2%9D%E5%A4%96%E5%8A%9F%E8%83%BD#104-%E8%84%9A%E6%9C%AC%E6%89%A7%E8%A1%8C)
+
+## 踩过的一些坑
+
+### 传入的boolean值参数会变成字符串
+假设通过redisson的eval()传入的`ARGV = false`，那么在lua脚本中
+```lua
+print(type(ARGV[1]))    --输出'string'
+```
+
+### 传入数值也会变成字符串
+假设通过redisson的eval()传入的`ARGV = 1L`，那么在lua脚本中获取会变成
+```lua
+print(ARGV[3])   --输出'["java.lang.Long",1]'
+```
+
+### 直接从redis.call()获取得值是int型，而在lua中进行了数值操作后得到的值却是long型
+例如，以下结果是转换为`java.lang.Integer`
+```lua
+return redis.call('get', 'tac')
+```
+而以下结果却是转换为`java.lang.Long`
+```lua
+local tac = redis.call('get', 'tac')
+return tac + 1
+```
 
 # 一些小细节
 
