@@ -95,5 +95,5 @@ sitemap:
 prism_plugin:
   mode: 'preprocess'    # realtime/preprocess
   theme: 'ghcolors'
-  line_number: false # default false
+  line_number: true # default false
   # custom_css: 'path/to/your/custom.css'     # optional
