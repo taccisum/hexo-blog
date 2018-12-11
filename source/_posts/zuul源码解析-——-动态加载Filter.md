@@ -1,5 +1,5 @@
 ---
-title: zuul源码解析 —— 动态加载Filter
+title: zuul源码解析 —— 动态加载Filter（未完成）
 urlname: source/zuul/filter/dynamic_load
 date: 2018-12-01 14:19:14
 categories:
@@ -8,7 +8,6 @@ categories:
 tags:
 ---
 
-
 ## 介绍
 
 zuul支持用两种语言编写的过滤器，分别是Groovy和Java。不过只有Groovy编写的过滤器才支持动态加载。
@@ -16,9 +15,6 @@ zuul支持用两种语言编写的过滤器，分别是Groovy和Java。不过只
 所谓动态加载，即是可以在应用的运行时对filter进行CRUD的操作，以达到动态调整zuul行为的目的。
 
 以下我们看看zuul是如何实现这一点的。
-
-需要说明的是，Filter动态加载并不是zuul-core提供的功能，而是zuul-netflix提供的一个实现。在zuul-core中，仅是提供了动态加载filter的可能性。也因此，这里TODO::一下，spring cloud zuul中可能没有这个功能？
-
 
 ## FilterLoader
 ```java
@@ -64,11 +60,7 @@ filterRegistry是FilterRegistry的一个唯一实例（单例模式）。FilterR
 |DOWNLOAD|GET|handleDownloadAction|下载脚本|
 |UPLOAD|PUT/POST|handleUploadAction|上传脚本|
 |ACTIVATE|PUT/POST|handleActivateAction|启用脚本|
-|CANARY|PUT/POST|handleCanaryAction|TODO::不知道干啥的|
+|CANARY|PUT/POST|handleCanaryAction|TODO::还不知道干啥用的|
 |DEACTIVATE|PUT/POST|handledeActivateAction|禁用脚本|
-
-
-
-
 
 
