@@ -20,13 +20,13 @@ tags:
 
 ## 文章目录
 
-- [zuul源码解析 —— 搭建调试环境](zuul/debug_env.html)
-- [zuul源码解析 —— zuul整体架构](zuul/architecture.html)
-- [zuul源码解析 —— 过滤器](zuul/filters.html)
-- [zuul源码解析 —— Pre和其它类型的过滤器](zuul/filters/pre.html)
-- [zuul源码解析 —— Route类型过滤器](zuul/filters/route.html)
-- [zuul源码解析 —— Post类型过滤器](zuul/filters/post.html)
-- [zuul源码解析 —— 动态加载Filter（未完成）](zuul/filter/dynamic_load.html)
+- [zuul源码解析 —— 搭建调试环境](debug_env.html)
+- [zuul源码解析 —— zuul整体架构](architecture.html)
+- [zuul源码解析 —— 过滤器](filters.html)
+- [zuul源码解析 —— Pre和其它类型的过滤器](filters/pre.html)
+- [zuul源码解析 —— Route类型过滤器](filters/route.html)
+- [zuul源码解析 —— Post类型过滤器](filters/post.html)
+- [zuul源码解析 —— 动态加载Filter（未完成）](filter/dynamic_load.html)
 
 ## TODO LIST
 
