@@ -8,15 +8,17 @@ categories:
 tags:
 ---
 
-# flowable启动流程解析（spring  boot）
+# 简介
 
-flowable的spring boot starter提供了零配置集成flowable的功能，主要包括各个engine的自动配置、数据库表的自动创建及流程/表单定义自动部署，其次还有rest-api，spring boot aucuator集成等。
+flowable engine一共有5种：App, CMMN, DMN, Form, Process(即BPMN)。
 
-Flowable engine一共有5种：App Cmmn Dmn Form Process(即bpmn)。
+`flowable-spring-boot-starter`提供了零配置集成flowable的功能，主要包括各类型engine的自动配置、流程/表单定义自动部署，其次还有rest-api，spring boot aucuator集成等。
 
-## flowable相关的AutoConfiguration
+这篇文章主要是解析flowable在spring boot环境下的启动流程，不涉及flowable内部原理。
 
-```factories
+# flowable相关的AutoConfiguration
+
+```properties
 # flowable-spring-boot-autoconfigure: spring.factories
 
 org.springframework.boot.env.EnvironmentPostProcessor=\
@@ -48,40 +50,38 @@ org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
     org.flowable.spring.boot.FlowableSecurityAutoConfiguration
 ```
 
-看起来比较多，不过大多数逻辑还是比较简单的。
+看起来比较多，不过大多数AutoConfiguration逻辑还是比较简单的。
 
-## Engine自动配置
+# engine自动配置
 
-各Engine配置方式大同小异，以ProcessEngine为例，其涉及到的主要AutoConfiguration为
+各engine的配置方式大同小异，以ProcessEngine为例，其涉及到的AutoConfiguration主要是
 
 - ProcessEngineAutoConfiguration
 - ProcessEngineServicesAutoConfiguration
 
-flowable通过这两个AutoConfiguration创建了ProcessEngine的实例供应用使用。
-
-### ProcessEngineAutoConfiguration
+## ProcessEngineAutoConfiguration
 
 ProcessEngineAutoConfiguration类图
 
-![class diagram](1)
+![ProcessEngineAutoConfiguration](/images/flowable/class_diagram_ProcessEngineAutoConfiguration.png)
 
-在ProcessEngineAutoConfiguration中配置了一个类型为SpringProcessEngineConfiguration的bean，SpringProcessEngineConfiguration类图如下
+从红框部分可以看到，在ProcessEngineAutoConfiguration中配置了一个类型为**SpringProcessEngineConfiguration**的bean，其类图如下
 
-![class diagram](2)
+![SpringProcessEngineConfiguration](/images/flowable/class_diagram_SpringProcessEngineConfiguration.png)
 
-可见，SpringProcessEngineConfiguration是一个ProcessEngineConfiguration，而ProcessEngineConfiguration正是用于创建ProcessEngine的核心类。
+可知，SpringProcessEngineConfiguration是ProcessEngineConfiguration的子类，而ProcessEngineConfiguration正是用于创建ProcessEngine的类。
 
-不过这里只是注册了一个bean，并没有调用其buildProcessEngine()方法来创建ProcessEngine。想知道ProcessEngine在何处被创建，可以参考[ProcessEngineServicesAutoConfiguration](#ProcessEngineFactoryBean)
+不过这里只是注册了一个bean，并没有调用其buildProcessEngine()方法来创建ProcessEngine。ProcessEngine实例是在[ProcessEngineFactoryBean](#ProcessEngineFactoryBean)中创建的。
 
-### ProcessEngineServicesAutoConfiguration
+## ProcessEngineServicesAutoConfiguration
 
-这个AutoConfiguration主要负责配置ProcessEngineFactoryBean及各个Service，如RuntimeService/RepositoryService/TaskService等。
+这个AutoConfiguration主要负责配置ProcessEngineFactoryBean及各个Service（RuntimeService, RepositoryService, TaskService等）。
 
-Service的配置比较简单，来看到ProcessEngineFactoryBean
+各Service的配置比较简单，主要来看看ProcessEngineFactoryBean
 
-#### ProcessEngineFactoryBean
+### ProcessEngineFactoryBean
 
-需要注意ProcessEngineFactoryBean是在内部类ProcessEngineServicesAutoConfiguration#StandaloneEngineConfiguration中注册的。
+需要注意的是ProcessEngineFactoryBean是在内部类ProcessEngineServicesAutoConfiguration#StandaloneEngineConfiguration中注册的。
 
 这是一个FactoryBean，我们知道Spring通过FactoryBean的getObject()方法来创建bean，来看看其代码
 
@@ -91,7 +91,7 @@ public class ProcessEngineFactoryBean implements FactoryBean<ProcessEngine>, Dis
     protected ProcessEngineConfigurationImpl processEngineConfiguration;
     @Override
     public ProcessEngine getObject() throws Exception {
-        // ...
+        // 省略无关代码...
         this.processEngine = processEngineConfiguration.buildProcessEngine();
         return this.processEngine;
     }
@@ -102,47 +102,88 @@ public class ProcessEngineFactoryBean implements FactoryBean<ProcessEngine>, Dis
 
 对于processEngineConfiguration这个对象的构建，可以参考[ProcessEngineAutoConfiguration](#ProcessEngineAutoConfiguration)
 
-## 自动部署
+# 自动部署
 
-## 数据库表自动创建
+flowable spring boot starter能够自动将classpath的相关目录（如processes, forms）下的资源自动部署。
 
-**部分通过手动维护，部分通过liquibase维护**
+不同的engine逻辑大同小异，以ProcessEngine为例，其核心在于SpringProcessEngineConfiguration这个类。
 
-SchemaManager
-Command, CommandExecutor, CommandContext, CommandInterceptor(chain), CommnadContextCloseListener
+SpringProcessEngineConfiguration实现了spring的SmartLifecycle接口，相关代码如下
 
-CommandInterceptor chain: log -> transaction -> command context - > transaction context -> invoke
+```java
+// SpringProcessEngineConfiguration.java
+@Override
+public void start() {
+    synchronized (lifeCycleMonitor) {
+        if (!isRunning()) {
+            // 遍历engines实例进行部署
+            enginesBuild.forEach(name -> autoDeployResources(ProcessEngines.getProcessEngine(name)));
+            running = true;
+        }
+    }
+}
 
-AbstractSqlScriptBasedDbSchemaManager -> ProcessDbSchemaManager -> AbstractEngineConfiguration.schemaManager
+@Override
+public void stop() {
+    synchronized (lifeCycleMonitor) {
+        running = false;
+    }
+}
 
-#### sql路径
+@Override
+public boolean isRunning() {
+    return running;
+}
+```
 
-##### 建表脚本
+其中start方法正是对process engines所需要的资源进行自动部署，会在spring应用完成初始化后进行回调。
 
-sql路径规则：
-org/flowable/{module}/db/{operator}/flowable.{db_type}.{module}.{component}.sql
+来看看autoDeployResources方法
 
-简而言之，就是在org/flowable/{module}/db目录下
+```java
+// SpringProcessEngineConfiguration.java
+protected Resource[] deploymentResources = new Resource[0];
 
-##### liquibase changelog
+protected void autoDeployResources(ProcessEngine processEngine) {
+    if (deploymentResources != null && deploymentResources.length > 0) {
+        final AutoDeploymentStrategy strategy = getAutoDeploymentStrategy(deploymentMode);      // 选择部署策略
+        strategy.deployResources(deploymentName, deploymentResources, processEngine.getRepositoryService());
+    }
+}
+```
 
-ACT_XX_DATABASECHANGELOG表中
+字段deploymentResources的值是关键，通过调试，发现该字段是在ProcessEngineAutoConfiguration中进行赋值的
 
-数据从哪来？
+```java
+// ProcessEngineAutoConfiguration
+@Bean
+@ConditionalOnMissingBean
+public SpringProcessEngineConfiguration springProcessEngineConfiguration(DataSource dataSource, PlatformTransactionManager platformTransactionManager,
+        @Process ObjectProvider<IdGenerator> processIdGenerator,
+        ObjectProvider<IdGenerator> globalIdGenerator,
+        @ProcessAsync ObjectProvider<AsyncExecutor> asyncExecutorProvider,
+        @ProcessAsyncHistory ObjectProvider<AsyncExecutor> asyncHistoryExecutorProvider) throws IOException {
 
-建表脚本中带有一些change log的insert语句
+    SpringProcessEngineConfiguration conf = new SpringProcessEngineConfiguration();
 
-#### 疑问
-- [ ] Agenda?
+    // 根据配置的规则找到相关的资源
+    List<Resource> resources = this.discoverDeploymentResources(
+        flowableProperties.getProcessDefinitionLocationPrefix(),
+        flowableProperties.getProcessDefinitionLocationSuffixes(),
+        flowableProperties.isCheckProcessDefinitions()
+    );
 
+    if (resources != null && !resources.isEmpty()) {
+        conf.setDeploymentResources(resources.toArray(new Resource[0]));
+        conf.setDeploymentName(flowableProperties.getDeploymentName());
+    }
 
-### 自动部署
+    // ...省略无关代码
 
-SpringProcessEngineConfiguration的deployResources字段会被一个job定时执行deploy（TODO::deploy完后好像没有清空？）。
+    return conf;
+}
+```
 
-在ProcessEngineAutoConfiguration中会通过discoverDeploymentResources()找到所有的resource，并set到SpringProcessEngineConfiguration的deployResources字段。
+# TODO LIST
 
-## TODO LIST
-
-- [ ] List<EngineConfigurationConfigurer>
-- [ ] 
+- [ ] List<EngineConfigurationConfigurer\>
