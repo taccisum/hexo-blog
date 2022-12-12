@@ -19,8 +19,9 @@ function dateFormat (date, fstr, utc) {
   }
 
 const conf = {
-    work: ['wd', 'dp'],
-    proj: ['desense_cli', 'devops', 'dag', 'stock_mgt'],
+    work: ['wd', 'dp', 'ss', 'cc'],
+    // proj: ['wd_msg_center', 'devops', 'desense_cli', 'dag', 'stock_mgt', 'other'],
+    proj: ['wd_msg_center', 'devops', 'desense_cli', 'dag', 'stock_mgt',],
 }
 
 f = String(fs.readFileSync(__dirname + '/segments/info_def.md'))
@@ -35,8 +36,7 @@ function read_segment(type, key='def') {
 
 
 
-console.log(`
----
+content = `---
 title: 个人简历 - 廖锦锋
 date: ${dateFormat(new Date(), '%Y-%m-%d %H:%M:%S')}
 ---
@@ -49,6 +49,8 @@ date: ${dateFormat(new Date(), '%Y-%m-%d %H:%M:%S')}
     font-weight: bold;
 }
 </style>
+
+${read_segment('info')}
 
 ${read_segment('intro')}
 
@@ -68,4 +70,6 @@ ${conf.proj.map(p => {
     return read_segment('proj', p)
 }).reduce((p, n) => p + '\n\n' + n)}
 
-`)
+`
+
+fs.writeFileSync(__dirname + '/1.md', content)

@@ -6,4 +6,4 @@
 - 实时行情数据源的稳定性：由于行情数据源几乎都为商业公司提供，且非正式的 OpenAPI，因此高频调用可能会有被限流甚至封 IP 的风险。为了解决这个问题，我们采用了动态 IP 正向代理 + 客户端负载均衡的方案
 - 自动化接口未公开：由于券商未公开交易接口，无法直接通过 API 调用来完成买入/卖出等操作。为了解决这个问题，我们采用了 UI 自动化框架 pywinauto 对交易客户端进行自动化操作来间接实现自动化交易。为了避免并发问题，同时还需维护一个指令队列，以按顺利逐条执行操作指令
 
-**技术栈**：Python + Flask + SocketIO + Scheduler + SQLAlchemy + pyautowin
+**技术栈**：Python + Flask + SocketIO + Scheduler + SQLAlchemy + pytdx + pyautowin
