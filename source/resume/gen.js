@@ -21,7 +21,7 @@ function dateFormat (date, fstr, utc) {
 const conf = {
     work: ['wd', 'dp', 'ss', 'cc'],
     // proj: ['wd_msg_center', 'devops', 'desense_cli', 'dag', 'stock_mgt', 'other'],
-    proj: ['wd_msg_center', 'devops', 'desense_cli', 'dag', 'stock_mgt',],
+    proj: ['wd_msg_center', 'apsara', 'devops_v2', 'desense_cli', 'dag', 'stock_mgt',],
 }
 
 f = String(fs.readFileSync(__dirname + '/segments/info_def.md'))
