@@ -30,6 +30,6 @@ end
 
 4. 重启 Wireshark 或使用 UI 上的 `Analyse -> Reload Lua Plugins` 功能（CMD + SHIFT + L）重新加载插件
 
-5. 启动抓包，用 `redis-cli` 连接你的 Redis，随便输入一些命令（我这里示例是 `get tac`），在 Wireshark filter 框框中输入 `redis` 过滤协议，看到以下数据说明成功了
+5. 启动抓包，用 `redis-cli` 连接你的 Redis，随便输入一些命令（我这里示例是 `get tac`），在 Wireshark filter 框框中输入 `redis` 或 `tcp.port == 6379` 过滤协议，看到以下数据说明成功了
 
 ![redis-wireshark-example](images/redis-wireshark/example.jpg)
