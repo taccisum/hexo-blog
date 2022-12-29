@@ -19,3 +19,10 @@ $ hexo s \
 ```shell
 $ hexo d -g
 ```
+
+
+如果出现 The "mode" argument must be integer. 报错，可能是 node 版本过高导致，切换下再执行就好
+
+```shell
+$ n 13.14.0
+```
