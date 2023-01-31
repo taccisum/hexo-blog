@@ -68,6 +68,59 @@ repository.streamAllBy().parallel().forEach(doc -> {
 1. 批处理的场景下没有分页直观（例如滑动窗口），这点主要是 JDK8 缺乏支持，其它类似的框架如 RxJava 或 ProjectReactor 都是支持的，[Spring Data Reactive](https://spring.io/blog/2016/11/28/going-reactive-with-spring-data) 也有相关的支持（当然，学习成本也是很高。。）
 2. 【实际与我猜想的不一样，见实测章节】Stream 处理任务的期间会持续占用一个连接，不利于资源的复用。相比之下 List 只有每次拉取页的 I/O 期间才占用连接（假如不加事务的话）。如果连接资源很紧张，使用 Stream 可能会出较大的问题
 
+
+### 性能实测
+
+**环境**：
+- 单 collection 约 130w 数据
+- 客户端：Java + MacOS
+
+#### List
+
+![list performance](images/list-vs-stream/jvm_list.png)
+
+![idea list breakpoint](images/list-vs-stream/idea_list_breakpoint.png)
+
+可以看到，调用 List 的过程，JVM 内存只增不减，且 GC 频率越来越高。整个过程花了接近 15min 时间。
+
+![list gc](images/list-vs-stream/jvm_list_gc.png)
+
+而在执行完后，触发一次 GC，直接内存占用就清零了。
+
+原因显而易见，List 操作需要在 JVM 内存中构建 `ArrayList` 对象，加上数据量过于庞大，会导致不断地进行扩容，因此性能极差。同时由于所有数据均被一个 `ArrayList` 对象持有，导致**内存占用只升不降**（无法被 GC 回收）
+
+#### Stream
+
+![stream performance](images/list-vs-stream/jvm_stream.png)
+
+```plain
+handle count: 1391665. time elapsed: 11500ms
+```
+
+首先性能上远远高于 List（没有扩容和 GC，只花了 11s 左右）
+
+由于不需要通过 `ArrayList` 去保存数据，内存利用率会迅速增加(约 700MB)，后面有一段维持直线的，猜测是因为一直没有触发 GC。
+
+将代码稍微改动下，在 stream 的处理期间手动触发一些 GC
+```java
+repository.streamAllBy()
+        .forEach(doc -> {
+            String itemInMemory = doc.getContent();
+            if (c.get() % 100000 == 0) {
+                System.gc();
+            }
+            c.getAndIncrement();
+        });
+```
+
+![stream performance](images/list-vs-stream/jvm_stream_with_gc.png)
+
+```plain
+handle count: 1391665. time elapsed: 15226ms
+```
+
+可以看到相比于 List，Stream 的处理期间是可以释放被占用的内存的。另外由于多了取余和 GC 的操作，整个时间花费也由 11s 上升到 15s，CPU 也有所上升。
+
 ### 缺点 2 实测
 为了验证上述的缺点 2，我准备了一个简单的服务以及两个接口
 ```java
