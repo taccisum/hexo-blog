@@ -1,6 +1,11 @@
-# Blog
+# Blog source code
 
 This is my personal blog Hexo-based.
+
+Hexo version:
+- hexo: 3.7.1
+- hexo-cli: 3.1.0
+- node: 13.14.0
 
 # How to 
 
