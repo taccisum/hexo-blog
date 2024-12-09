@@ -1,0 +1,6 @@
+# Theme configurations for Next.
+theme_config:
+  footer:
+    beian:
+      enable: true
+      icp: 粤ICP备2022025255号-1
