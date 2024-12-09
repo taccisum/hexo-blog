@@ -2,18 +2,20 @@
 
 This is my personal blog Hexo-based.
 
-Hexo version:
+Hexo versions:
+- node: 13.14.0
 - hexo: 3.7.1
 - hexo-cli: 3.1.0
-- node: 13.14.0
+
+> Tip: Node version 13.14.0 is too much lower than latest in current time(20241209). We can use `n` to install & switch it quickly without bad effect.
 
 # How to 
 
 ## Run
 
 ```shell
-$ npm install
-$ npm install -g hexo-cli
+$ npm install --registry=https://registry.npmmirror.com
+$ npm install -g hexo-cli@3.1.0 --registry=https://registry.npmmirror.com
 $ hexo s
 ```
 
